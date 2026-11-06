@@ -1,6 +1,5 @@
 package ni.edu.uam.proyectohibernate.model;
 import jakarta.persistence.*;
-import javafx.scene.effect.Blend;
 
 import java.math.BigDecimal;
 
@@ -25,8 +24,14 @@ public class Libro {
     @Column(name = "precio", nullable = false, precision = 12, scale = 2)
     private BigDecimal precio;
 
-    public Libro() {
+    public Libro(String titulo, String audtor, int aniopPublicacion, BigDecimal precio) {
+        this.titulo = titulo;
+        this.audtor = audtor;
+        this.aniopPublicacion = aniopPublicacion;
+        this.precio = precio;
+    }
 
+    public Libro() {
     }
 
     public Libro(long id, String titulo, String audtor, int aniopPublicacion, BigDecimal precio) {

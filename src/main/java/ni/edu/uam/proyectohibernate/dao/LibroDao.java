@@ -17,10 +17,13 @@ public class LibroDao {
         try {
             // Iniciar la transacción en PostgreSQL
             tx.begin();
+
             // Decirle a Hibernate que prepare la persistencia del objeto
             em.persist(libro);
+
             // Confirmar los cambios en la base de datos
             tx.commit();
+
         } catch (RuntimeException ex) {
             if (tx.isActive()) {
                 tx.rollback();
@@ -34,12 +37,70 @@ public class LibroDao {
 
     public List<Libro> listar() {
         EntityManager em = JPAUtil.getEntityManager();
+
         try {
-            return em.createQuery("SELECT l FROM Libro l ORDER BY l.id", Libro.class
+            return em.createQuery(
+                    "SELECT l FROM Libro l ORDER BY l.id", Libro.class
             ).getResultList();
 
         } finally {
             em.close();
         }
+    }
+
+    public static boolean modificar(Libro libro) {
+        EntityManager em = JPAUtil.getEntityManager();
+        EntityTransaction tx = em.getTransaction();
+
+        try {
+            tx.begin();
+
+            Libro libroBD = em.find(Libro.class, libro.getId());
+
+            if (libroBD == null) {
+                tx.rollback();
+                return false;
+            }
+
+            libroBD.setTitulo(libro.getTitulo());
+            libroBD.setAudtor(libro.getAudtor());
+            libroBD.setAniopPublicacion(libro.getAniopPublicacion());
+            libroBD.setPrecio(libro.getPrecio());
+
+            tx.commit();
+            return true;
+
+        } catch (RuntimeException ex) {
+            if (tx.isActive()) {
+                tx.rollback();
+            }
+            throw ex;
+
+        } finally {
+            em.close();
+        }
+    }
+    public boolean eliminar(Long id){
+        EntityManager em = JPAUtil.getEntityManager();
+        EntityTransaction tx = em.getTransaction();
+        try{
+            tx.begin();
+            Libro libroBD = em.find(Libro.class, id);
+            if(libroBD == null){
+                tx.rollback();
+                return false;
+            }
+            em.remove(libroBD);
+            tx.commit();
+            return true;
+        } catch (RuntimeException ex) {
+            if(tx.isActive()){
+                tx.rollback();
+            }
+            throw ex;
+        } finally {
+            em.close();
+        }
+
     }
 }

@@ -28,7 +28,7 @@ public class JPAUtil {
             propiedades.put("jakarta.persistence.jdbc.password", password);
 
             entityManagerFactory = Persistence.createEntityManagerFactory(
-                    "biblotecaPU", propiedades
+                    "bibliotecaPU", propiedades
             );
         }
     }
