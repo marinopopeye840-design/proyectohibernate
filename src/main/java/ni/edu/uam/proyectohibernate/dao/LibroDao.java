@@ -4,11 +4,28 @@ package ni.edu.uam.proyectohibernate.dao;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityTransaction;
 import ni.edu.uam.proyectohibernate.database.JPAUtil;
+import ni.edu.uam.proyectohibernate.model.Categoria;
 import ni.edu.uam.proyectohibernate.model.Libro;
 
 import java.util.List;
 
 public class LibroDao {
+
+    private Categoria obtenerCategoria(EntityManager em, Libro libro) {
+        // Validamos que la categoria del libro no sea null
+        if (libro.getCategoria() == null || libro.getCategoria().getId() == null) {
+            throw new RuntimeException("Error al obtener categoria");
+        }
+
+        Long categoriaId = libro.getCategoria().getId();
+        Categoria categoria = em.find(Categoria.class, categoriaId);
+
+        if (categoria == null) {
+            throw new RuntimeException("Error al obtener categoria");
+        }
+
+        return categoria;
+    }
 
     public void guardar(Libro libro) {
         EntityManager em = JPAUtil.getEntityManager();
@@ -17,6 +34,9 @@ public class LibroDao {
         try {
             // Iniciar la transacción en PostgreSQL
             tx.begin();
+
+            Categoria categoria = obtenerCategoria(em, libro);
+            libro.setCategoria(categoria);
 
             // Decirle a Hibernate que prepare la persistencia del objeto
             em.persist(libro);
@@ -40,7 +60,7 @@ public class LibroDao {
 
         try {
             return em.createQuery(
-                    "SELECT l FROM Libro l ORDER BY l.id", Libro.class
+                    "SELECT l FROM Libro l JOIN FETCH l.categoria ORDER BY l.id", Libro.class
             ).getResultList();
 
         } finally {
@@ -48,7 +68,7 @@ public class LibroDao {
         }
     }
 
-    public static boolean modificar(Libro libro) {
+    public boolean modificar(Libro libro) {
         EntityManager em = JPAUtil.getEntityManager();
         EntityTransaction tx = em.getTransaction();
 
@@ -62,10 +82,13 @@ public class LibroDao {
                 return false;
             }
 
+            Categoria categoria = obtenerCategoria(em, libro);
+
             libroBD.setTitulo(libro.getTitulo());
             libroBD.setAudtor(libro.getAudtor());
             libroBD.setAniopPublicacion(libro.getAniopPublicacion());
             libroBD.setPrecio(libro.getPrecio());
+            libroBD.setCategoria(categoria);
 
             tx.commit();
             return true;
@@ -80,27 +103,33 @@ public class LibroDao {
             em.close();
         }
     }
-    public boolean eliminar(Long id){
+
+    public boolean eliminar(Long id) {
         EntityManager em = JPAUtil.getEntityManager();
         EntityTransaction tx = em.getTransaction();
-        try{
+
+        try {
             tx.begin();
+
             Libro libroBD = em.find(Libro.class, id);
-            if(libroBD == null){
+
+            if (libroBD == null) {
                 tx.rollback();
                 return false;
             }
+
             em.remove(libroBD);
             tx.commit();
             return true;
+
         } catch (RuntimeException ex) {
-            if(tx.isActive()){
+            if (tx.isActive()) {
                 tx.rollback();
             }
             throw ex;
+
         } finally {
             em.close();
         }
-
     }
 }

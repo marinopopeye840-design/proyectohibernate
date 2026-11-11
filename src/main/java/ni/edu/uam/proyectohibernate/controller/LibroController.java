@@ -1,11 +1,14 @@
 
 package ni.edu.uam.proyectohibernate.controller;
 
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import ni.edu.uam.proyectohibernate.dao.CategoriaDao;
 import ni.edu.uam.proyectohibernate.dao.LibroDao;
+import ni.edu.uam.proyectohibernate.model.Categoria;
 import ni.edu.uam.proyectohibernate.model.Libro;
 
 import java.math.BigDecimal;
@@ -13,6 +16,8 @@ import java.util.List;
 import java.util.Optional;
 
 public class LibroController {
+
+    @FXML private ComboBox<Categoria> cmbCategoria;
 
     @FXML private TextField txtTitulo;
     @FXML private TextField txtAutor;
@@ -28,7 +33,8 @@ public class LibroController {
     @FXML private TableColumn<Libro, String> coldAutor;
     @FXML private TableColumn<Libro, Integer> coldAnio;
     @FXML private TableColumn<Libro, BigDecimal> coldPrecio;
-
+    @FXML private TableColumn<Libro, String> coldCategoria;
+    private final CategoriaDao categoriaDao = new CategoriaDao();
     private final LibroDao libroDAO = new LibroDao();
 
     // ID del registro seleccionado en el tableView.
@@ -41,6 +47,23 @@ public class LibroController {
         coldAnio.setCellValueFactory(new PropertyValueFactory<>("aniopPublicacion"));
         coldPrecio.setCellValueFactory(new PropertyValueFactory<>("precio"));
 
+        // Mostar el nombre, no el objeto Categoría.
+        coldCategoria.setCellValueFactory(data -> {;
+            Categoria categoria = data.getValue().getCategoria();
+            String nombre = categoria != null ? categoria.getNombre() : "Sin categoría";
+            return new SimpleStringProperty(nombre);
+        });
+        tblLibros.getSelectionModel().selectedItemProperty().addListener((observableValue, oldValue, newValue) -> {
+            if(newValue != null){
+                seleccionarLibro(newValue);
+                actualizarBotones();
+            }else{
+                idSeleccionado = null;
+                actualizarBotones();
+            }
+        });
+
+
         tblLibros.getSelectionModel().selectedItemProperty().addListener((observableValue, oldValue, newValue) -> {
             if (newValue != null) {
                 seleccionarLibro(newValue);
@@ -52,6 +75,7 @@ public class LibroController {
 
         actualizarBotones();
         cargarLibros();
+        cargarCategorias();
     }
 
     private void seleccionarLibro(Libro libro) {
@@ -75,9 +99,27 @@ public class LibroController {
         int anioPublicacion = Integer.valueOf(txtAnio.getText());
         BigDecimal precio = new BigDecimal(txtPrecio.getText());
 
-        return new Libro(titulo, autor, anioPublicacion, precio);
+        Categoria categoria = cmbCategoria.getValue();
+        if (categoria == null) {
+            throw new IllegalArgumentException("Debe seleccionar una categoría");
+        }
+        return new Libro(titulo, autor, anioPublicacion, precio, categoria);
     }
 
+    //Recuperar las Categoria de postgreSQL
+    private void cargarCategorias(){
+        try{
+            List<Categoria> categorias = categoriaDao.listar();
+            cmbCategoria.setItems(FXCollections.observableArrayList(categorias));
+        }catch( Exception e){
+            e.printStackTrace();
+            mostrarAlert(
+                    Alert.AlertType.ERROR,
+                    "No se puedieron cargar las categoira "
+            );
+
+        }
+    }
     @FXML
     private void guardarLibros() {
         try {
@@ -96,7 +138,7 @@ public class LibroController {
         try {
             Libro libro = obtenerLibroFormulario();
             libro.setId(idSeleccionado);
-            boolean modificado = LibroDao.modificar(libro);
+            boolean modificado = libroDAO.modificar(libro);
 
             if (!modificado) {
                 // Alert para indicar que hubo un erro a nivel de transaccion
@@ -161,5 +203,11 @@ public class LibroController {
         txtAnio.clear();
         txtPrecio.clear();
         actualizarBotones();
+    }
+
+    private void mostrarAlert(Alert.AlertType type, String message){
+        Alert alert = new Alert(type);
+        alert.setContentText(message);
+        alert.showAndWait();
     }
 }

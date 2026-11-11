@@ -16,6 +16,7 @@
                 <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                 <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                 <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
             </rowConstraints>
             <children>
                 <Label text="Titulo" />
@@ -26,6 +27,8 @@
                 <TextField fx:id="txtAutor" promptText="Autor del libro" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                 <TextField fx:id="txtAnio" promptText="Año de publicacion" GridPane.columnIndex="1" GridPane.rowIndex="2" />
                 <TextField fx:id="txtPrecio" promptText="Precio del libro" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+            <Label text="Categoria" GridPane.rowIndex="4" />
+            <ComboBox fx:id="cmbCategoria" prefHeight="26.0" prefWidth="282.0" promptText="Seleccione la categoria" GridPane.columnIndex="1" GridPane.rowIndex="4" />
             </children>
         </GridPane>
         <Label layoutX="39.0" layoutY="14.0" text="Registro de libros">
@@ -36,13 +39,14 @@
         <Separator layoutX="17.0" layoutY="48.0" prefHeight="2.0" prefWidth="555.0" />
         <Button fx:id="btnGuardar" layoutX="110.0" layoutY="199.0" mnemonicParsing="false" onAction="#guardarLibros" text="Guardar Libro" />
         <Button fx:id="btnCargar" layoutX="220.0" layoutY="199.0" mnemonicParsing="false" onAction="#cargarLibros" text="Cargar Libro" />
-        <TableView fx:id="tblLibros" layoutX="34.0" layoutY="250.0" prefHeight="200.0" prefWidth="555.0">
+        <TableView fx:id="tblLibros" layoutX="34.0" layoutY="250.0" prefHeight="200.0" prefWidth="613.0">
             <columns>
                 <TableColumn fx:id="coldID" prefWidth="75.0" text="ID" />
                 <TableColumn fx:id="coldTitulo" prefWidth="110.20001983642578" text="Titulo" />
                 <TableColumn fx:id="coldAutor" prefWidth="144.19998168945312" text="Autor" />
                 <TableColumn fx:id="coldAnio" prefWidth="94.4000244140625" text="Año" />
                 <TableColumn fx:id="coldPrecio" prefWidth="98.59994506835938" text="Precio" />
+            <TableColumn fx:id="coldCategoria" prefWidth="75.0" text="Categoria" />
             </columns>
         </TableView>
         <Button fx:id="btnModificarLibro" layoutX="312.0" layoutY="199.0" mnemonicParsing="false" onAction="#modificarLibro" prefHeight="26.0" prefWidth="102.0" text="Modificar Libro" />
